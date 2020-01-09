@@ -7,10 +7,10 @@ module OmniAuth
       class Controller < ActionController::Base
         protect_from_forgery :with => :exception, :prepend => true
 
-        rescue_from ActionController::InvalidAuthenticityToken do |e|
-          # Log warning
-          raise e
-        end
+        # rescue_from ActionController::InvalidAuthenticityToken do |e|
+        #   # Log warning
+        #   raise e
+        # end
 
         def index
           head :ok
@@ -22,7 +22,11 @@ module OmniAuth
       end
 
       def self.call(env)
-        app.call(env)
+        begin
+          app.call(env)
+        rescue ActionController::InvalidAuthenticityToken => e
+          [302, {'Location' => "/global/user_sessions/new", 'Content-Type' => 'text/html'}, ['Invalid Authenticity Token']]
+        end
       end
 
       def self.verified?(env)
